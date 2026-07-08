@@ -2,495 +2,215 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Device Info</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Device Info Simple</title>
     <style>
-        :root {
-          --bg:     #0d0d1a;
-          --card:   #1a1a2e;
-          --border: #2a2a45;
-          --accent: #e94560;
-          --blue:   #40c4ff;
-          --green:  #00e676;
-          --yellow: #ffeb3b;
-          --text:   #eaeaea;
-          --muted:  #8888aa;
-          --r:      14px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
-          background: var(--bg); color: var(--text);
-          font-family: 'Segoe UI', system-ui, sans-serif;
-          min-height: 100vh; overflow-x: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
         }
-
         header {
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          padding: 20px 16px 14px; text-align: center;
-          border-bottom: 2px solid var(--accent);
-          position: sticky; top: 0; z-index: 100;
-          box-shadow: 0 2px 20px rgba(0,0,0,.5);
+            background-color: #3f51b5;
+            color: white;
+            padding: 15px;
+            text-align: center;
         }
-        header h1 { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
-        #headerSub { font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: .5px; }
-
         .tabs {
-          display: flex; overflow-x: auto; background: #11111f;
-          border-bottom: 1px solid var(--border); scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
+            display: flex;
+            overflow-x: auto;
+            background-color: #e0e0e0;
+            border-bottom: 1px solid #ccc;
         }
-        .tabs::-webkit-scrollbar { display: none; }
         .tab-btn {
-          flex: 0 0 auto; padding: 11px 14px; font-size: 11px; font-weight: 700;
-          color: var(--muted); background: none; border: none;
-          border-bottom: 3px solid transparent; cursor: pointer;
-          white-space: nowrap; letter-spacing: .4px; transition: color .2s, border-color .2s;
+            padding: 12px 20px;
+            bo rder: none;
+            background: none;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            white-space: nowrap;
         }
-        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-        .page { display: none; padding: 14px; animation: fadeIn .25s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; } }
-
+        .tab-btn.active {
+            color: #3f51b5;
+            border-bottom: 3px solid #3f51b5;
+        }
+        .page {
+            display: none;
+            padding: 20px;
+        }
+        .page.active {
+            display: block;
+        }
         .card {
-          background: var(--card); border: 1px solid var(--border);
-          border-radius: var(--r); padding: 16px; margin-bottom: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .card-title {
-          font-size: 10px; font-weight: 800; text-transform: uppercase;
-          letter-spacing: 1.5px; color: var(--accent); margin-bottom: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #3f51b5;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
         .row {
-          display: flex; justify-content: space-between; align-items: flex-start;
-          gap: 10px; padding: 9px 0; border-bottom: 1px solid #1e1e35; font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f9f9f9;
         }
-        .row:last-child { border-bottom: none; padding-bottom: 0; }
-        .label { color: var(--muted); font-size: 12px; flex-shrink: 0; }
-        .value { color: var(--text); font-weight: 500; text-align: right; word-break: break-word; }
+        .row:last-child { border-bottom: none; }
+        .label { color: #777; font-size: 13px; }
+        .value { font-weight: bold; font-size: 13px; text-align: right; word-break: break-word; margin-left: 10px; }
 
-        .badge {
-          display: inline-block; padding: 2px 9px; border-radius: 20px;
-          font-size: 11px; font-weight: 700;
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3f51b5;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .badge-green { background: rgba(0,230,118,.12); color: var(--green); border: 1px solid rgba(0,230,118,.2); }
-        .badge-red   { background: rgba(233,69,96,.12); color: var(--accent); border: 1px solid rgba(233,69,96,.2); }
-        .badge-blue  { background: rgba(64,196,255,.12); color: var(--blue); border: 1px solid rgba(64,196,255,.2); }
-
-        .bar-wrap { margin: 12px 0 6px; }
-        .bar-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 7px; }
-        .bar-outer { background: #1e1e35; border-radius: 10px; height: 16px; overflow: hidden; position: relative; }
-        .bar-inner { height: 100%; border-radius: 10px; transition: width .7s cubic-bezier(.4,0,.2,1); }
-        .bat-high  { background: linear-gradient(90deg, #00c853, var(--green)); }
-        .bat-mid   { background: linear-gradient(90deg, #ffc107, var(--yellow)); }
-        .bat-low   { background: linear-gradient(90deg, #d50000, var(--accent)); }
-        .sto-bar   { background: linear-gradient(90deg, #0288d1, var(--blue)); }
-        .bar-lbl   { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 800; color: rgba(255,255,255,.85); }
-
-        .sensor-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-        .sensor-tag {
-          background: #13132a; border: 1px solid #1e2a50;
-          border-radius: 8px; padding: 5px 10px; font-size: 11px; color: var(--blue);
+        .btn:active { background-color: #303f9f; }
+        .btn-outline {
+            background: none;
+            border: 1px solid #3f51b5;
+            color: #3f51b5;
         }
-
-        .motion-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .motion-box { background: #11111f; border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
-        .motion-axis { font-size: 10px; color: var(--muted); margin-bottom: 5px; letter-spacing: .5px; }
-        .motion-val  { font-size: 18px; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
-
-        /* ── Camera UI ── */
-        .cam-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
-        .cam-btn {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          padding: 20px 12px; border: none; border-radius: var(--r);
-          cursor: pointer; transition: transform .1s, opacity .15s;
-          gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .3px;
-        }
-        .cam-btn:active { transform: scale(.96); opacity: .85; }
-        .cam-btn-icon { font-size: 32px; line-height: 1; }
-        .cam-back  { background: linear-gradient(135deg, #0f3460, #16417a); color: var(--blue); border: 1px solid rgba(64,196,255,.25); }
-        .cam-front { background: linear-gradient(135deg, #2a1a4e, #3d2070); color: #ce93d8; border: 1px solid rgba(206,147,216,.25); }
-
-        .cam-tip {
-          background: #11111f; border: 1px solid var(--border); border-radius: 10px;
-          padding: 12px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 4px;
-        }
-        .cam-tip strong { color: var(--text); }
-
-        /* ── Buttons ── */
-        .btn { display: block; width: 100%; padding: 13px; border: none; border-radius: var(--r); font-size: 13px; font-weight: 700; letter-spacing: .5px; cursor: pointer; transition: transform .1s, opacity .15s; }
-        .btn:active { transform: scale(.97); opacity: .85; }
-        .btn-accent  { background: linear-gradient(135deg, var(--accent), #c62a47); color: #fff; box-shadow: 0 4px 16px rgba(233,69,96,.3); margin-bottom: 10px; }
-        .btn-purple  { background: linear-gradient(135deg, #7c4dff, #651fff); color: #fff; box-shadow: 0 4px 16px rgba(124,77,255,.3); }
-        .btn-outline { background: transparent; border: 1px solid #2a2a55; color: var(--blue); margin-top: 8px; }
-        .btn-green   { background: linear-gradient(135deg, #00c853, var(--green)); color: #001a0a; margin-top: 10px; }
 
         .loc-display {
-          background: #11111f; border: 1px solid var(--border); border-radius: 10px;
-          padding: 16px; text-align: center; font-size: 13px; color: var(--muted);
-          min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #eee;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 10px;
         }
-        .coord { font-size: 22px; font-weight: 800; color: var(--green); margin: 8px 0; }
-
-        .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; padding: 8px 0; }
-        .spinner { width: 16px; height: 16px; border: 2px solid #2a2a45; border-top-color: var(--accent); border-radius: 50%; flex-shrink: 0; animation: spin .7s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .coord { font-size: 20px; color: #2e7d32; font-weight: bold; margin-bottom: 5px; }
+        .loading { text-align: center; color: #999; padding: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📱 Device Info</h1>
-    <p id="headerSub">Scanning device…</p>
+    <h1>Device Info</h1>
+    <div id="header-device-name" style="font-size: 14px; opacity: 0.9;">Loading...</div>
 </header>
 
 <nav class="tabs">
-    <button class="tab-btn active" onclick="showTab('device',this)">📋 Device</button>
-    <button class="tab-btn" onclick="showTab('battery',this)">🔋 Battery</button>
-    <button class="tab-btn" onclick="showTab('screen',this)">🖥 Screen</button>
-    <button class="tab-btn" onclick="showTab('network',this)">📶 Network</button>
-    <button class="tab-btn" onclick="showTab('storage',this)">💾 Storage</button>
-    <button class="tab-btn" onclick="showTab('cpu',this)">⚙️ CPU</button>
-    <button class="tab-btn" onclick="showTab('sensors',this)">🎛 Sensors</button>
-    <button class="tab-btn" onclick="showTab('camera',this)">📸 Camera</button>
-    <button class="tab-btn" onclick="showTab('motion',this)">🔄 Motion</button>
-    <button class="tab-btn" onclick="showTab('location',this)">📍 Location</button>
+    <button class="tab-btn active" onclick="showTab('device',this)">Device</button>
+    <button class="tab-btn" onclick="showTab('network',this)">Network</button>
+    <button class="tab-btn" onclick="showTab('cpu',this)">CPU</button>
+    <button class="tab-btn" onclick="showTab('audio',this)">Audio</button>
+    <button class="tab-btn" onclick="showTab('biometric',this)">Security</button>
+    <button class="tab-btn" onclick="showTab('camera',this)">Camera</button>
+    <button class="tab-btn" onclick="showTab('location',this)">Location</button>
 </nav>
 
-<!-- ════ DEVICE ════ -->
+<!-- DEVICE -->
 <div id="page-device" class="page active">
     <div class="card">
-        <div class="card-title">📋 Hardware</div>
-        <div id="device-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
+        <div class="card-title">Hardware</div>
+        <div id="device-rows"><div class="loading">Reading hardware...</div></div>
     </div>
     <div class="card">
-        <div class="card-title">🌍 Locale & Region</div>
-        <div id="locale-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
+        <div class="card-title">Locale</div>
+        <div id="locale-rows"></div>
     </div>
 </div>
 
-<!-- ════ BATTERY ════ -->
-<div id="page-battery" class="page">
-    <div class="card">
-        <div class="card-title">🔋 Battery Status</div>
-        <div class="bar-wrap">
-            <div class="bar-meta"><span>Charge Level</span><span id="bat-label">—%</span></div>
-            <div class="bar-outer">
-                <div class="bar-inner bat-high" id="bat-bar" style="width:0%"></div>
-                <span class="bar-lbl" id="bat-bar-lbl">—%</span>
-            </div>
-        </div>
-        <div id="battery-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
-    </div>
-    <button class="btn btn-outline" onclick="loadBattery()">↻ Refresh Battery</button>
-</div>
-
-<!-- ════ SCREEN ════ -->
-<div id="page-screen" class="page">
-    <div class="card">
-        <div class="card-title">🖥 Native Display</div>
-        <div id="screen-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
-    </div>
-    <div class="card">
-        <div class="card-title">🌐 Browser Viewport</div>
-        <div id="browser-rows"></div>
-    </div>
-</div>
-
-<!-- ════ NETWORK ════ -->
+<!-- NETWORK -->
 <div id="page-network" class="page">
     <div class="card">
-        <div class="card-title">📶 Native Connection</div>
-        <div id="network-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
+        <div class="card-title">Native Connection</div>
+        <div id="network-rows"></div>
     </div>
     <div class="card">
-        <div class="card-title">🌐 Web API Details</div>
+        <div class="card-title">Web API Details</div>
         <div id="web-network-rows"></div>
     </div>
-    <button class="btn btn-outline" onclick="loadNetwork()">↻ Refresh Network</button>
+    <button class="btn btn-outline" onclick="loadNetwork()">Refresh</button>
 </div>
 
-<!-- ════ STORAGE ════ -->
-<div id="page-storage" class="page">
-    <div class="card">
-        <div class="card-title">💾 Storage Usage</div>
-        <div class="bar-wrap">
-            <div class="bar-meta"><span>Used</span><span id="sto-label">—</span></div>
-            <div class="bar-outer">
-                <div class="bar-inner sto-bar" id="sto-bar" style="width:0%"></div>
-                <span class="bar-lbl" id="sto-bar-lbl">—%</span>
-            </div>
-        </div>
-        <div id="storage-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
-    </div>
-</div>
-
-<!-- ════ CPU ════ -->
+<!-- CPU -->
 <div id="page-cpu" class="page">
     <div class="card">
-        <div class="card-title">⚙️ Processor & Memory</div>
-        <div id="cpu-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
+        <div class="card-title">Processor & RAM</div>
+        <div id="cpu-rows"></div>
     </div>
 </div>
 
-<!-- ════ SENSORS ════ -->
-<div id="page-sensors" class="page">
+<!-- AUDIO -->
+<div id="page-audio" class="page">
     <div class="card">
-        <div class="card-title">🎛 Hardware Sensors</div>
-        <div id="sensor-count" style="font-size:13px;color:var(--muted);margin-bottom:4px;"></div>
-        <div class="sensor-grid" id="sensor-tags"></div>
+        <div class="card-title">Audio Status</div>
+        <div id="audio-rows"></div>
+    </div>
+    <div class="card">
+        <div class="card-title">Voice to Text</div>
+        <div id="speech-result" style="padding: 10px; border: 1px dashed #ccc; min-height: 50px; margin-bottom: 10px; font-style: italic; color: #555;">
+            Tap the button and speak...
+        </div>
+        <button class="btn" onclick="startSpeechRecognition()">🎤 Start Listening</button>
+    </div>
+    <button class="btn btn-outline" onclick="loadAudio()">Refresh Info</button>
+</div>
+
+<!-- BIOMETRIC -->
+<div id="page-biometric" class="page">
+    <div class="card">
+        <div class="card-title">Biometric Hardware</div>
+        <div id="biometric-rows"></div>
+    </div>
+    <div class="card">
+        <div class="card-title">Example: Protected Content</div>
+        <p style="font-size: 12px; color: #666;">This demonstrates how an app requests your fingerprint or face to unlock features.</p>
+        <div id="bio-status" style="margin-bottom: 10px; font-weight: bold; color: #3f51b5;">Authentication Required</div>
+        <div id="secret-content" style="display:none; padding: 10px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; margin-bottom: 10px;">
+            🔓 <strong>Secret unlocked!</strong> Your biometric ID is unique and secure.
+        </div>
+        <button id="btn-auth" class="btn" onclick="testBiometric()" style="background-color: #009688;">Unlock with Biometrics</button>
     </div>
 </div>
 
-<!-- ════ CAMERA ════ -->
+<!-- CAMERA -->
 <div id="page-camera" class="page">
     <div class="card">
-        <div class="card-title">📸 Open Camera</div>
-        <div class="cam-btn-grid">
-            <button class="cam-btn cam-back" onclick="openCamera('back')">
-                <span class="cam-btn-icon">📷</span>
-                Back Camera
-            </button>
-            <button class="cam-btn cam-front" onclick="openCamera('front')">
-                <span class="cam-btn-icon">🤳</span>
-                Front Camera
-            </button>
-        </div>
-        <div class="cam-tip" style="margin-top:14px;">
-            <strong>Tip:</strong> Tapping either button opens a full-screen CameraX preview.
-            Use the <strong>🔄 flip</strong> button inside the camera to switch lenses,
-            and the <strong>📸 shutter</strong> button to capture — photos are saved to
-            <strong>Pictures/DeviceInfo</strong>.
-        </div>
+        <div class="card-title">Capture & Gallery</div>
+        <button class="btn" onclick="openCamera('back')">Take Photo (Back)</button>
+        <button class="btn" onclick="openCamera('front')" style="background-color: #673ab7;">Take Photo (Front)</button>
+        <button class="btn" onclick="openGallery()" style="background-color: #ff9800;">Choose from Gallery</button>
     </div>
     <div class="card">
-        <div class="card-title">🔍 Camera Hardware Info</div>
-        <div id="camera-rows"><div class="loading"><div class="spinner"></div>Reading…</div></div>
+        <div class="card-title">Hardware Info</div>
+        <div id="camera-rows"></div>
     </div>
 </div>
 
-<!-- ════ MOTION ════ -->
-<div id="page-motion" class="page">
-    <div class="card">
-        <div class="card-title">📐 Accelerometer (m/s²)</div>
-        <div class="motion-grid">
-            <div class="motion-box"><div class="motion-axis">X AXIS</div><div class="motion-val" id="accel-x">—</div></div>
-            <div class="motion-box"><div class="motion-axis">Y AXIS</div><div class="motion-val" id="accel-y">—</div></div>
-            <div class="motion-box"><div class="motion-axis">Z AXIS</div><div class="motion-val" id="accel-z">—</div></div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-title">🧭 Orientation (°)</div>
-        <div class="motion-grid">
-            <div class="motion-box"><div class="motion-axis">ALPHA</div><div class="motion-val" id="gyro-a">—</div></div>
-            <div class="motion-box"><div class="motion-axis">BETA</div><div class="motion-val" id="gyro-b">—</div></div>
-            <div class="motion-box"><div class="motion-axis">GAMMA</div><div class="motion-val" id="gyro-g">—</div></div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-title">📳 Haptic Feedback</div>
-        <button class="btn btn-accent" onclick="testVibrate(200)">📳 Short Vibrate — 200ms</button>
-        <button class="btn btn-purple" onclick="testVibrate(600)">📳 Long Vibrate — 600ms</button>
-    </div>
-</div>
-
-<!-- ════ LOCATION ════ -->
+<!-- LOCATION -->
 <div id="page-location" class="page">
     <div class="card">
-        <div class="card-title">📍 GPS Location</div>
-        <div class="loc-display" id="loc-display">Tap below to fetch your coordinates</div>
-        <button class="btn btn-green" onclick="fetchLocation()">📍 Get My Location</button>
+        <div class="card-title">GPS Status</div>
+        <div id="gps-status-rows"></div>
+    </div>
+    <div class="card">
+        <div class="card-title">GPS Location</div>
+        <div class="loc-display" id="loc-display">No coordinates fetched</div>
+        <button class="btn" onclick="fetchLocation()" style="background-color: #4caf50;">Get Location</button>
+        <button id="btn-map" class="btn" style="display:none; background-color: #2196f3;" onclick="viewOnMap()">View on Maps</button>
     </div>
 </div>
 
-<script>
-    // ── Tab Nav ────────────────────────────────────────────────────────────────────
-    function showTab(name, btn) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('page-' + name).classList.add('active');
-      btn.classList.add('active');
-      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
+<script src="/assets/app.js"></script>
 
-    // ── Row Builder ────────────────────────────────────────────────────────────────
-    function buildRows(obj, id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = Object.entries(obj).map(([k, v]) => {
-        const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
-        let val;
-        if (v === true)       val = '<span class="badge badge-green">✓ Yes</span>';
-        else if (v === false) val = '<span class="badge badge-red">✗ No</span>';
-        else                  val = `<span class="value">${v}</span>`;
-        return `<div class="row"><span class="label">${label}</span>${val}</div>`;
-      }).join('');
-    }
-
-    // ── Safe Bridge Caller ─────────────────────────────────────────────────────────
-    function bridge(method, ...args) {
-      try {
-        if (typeof AndroidBridge !== 'undefined' && AndroidBridge[method]) {
-          const result = AndroidBridge[method](...args);
-          return result ? JSON.parse(result) : null;
-        }
-      } catch(e) { console.warn('Bridge:', method, e); }
-      return null;
-    }
-
-    // ── Camera ─────────────────────────────────────────────────────────────────────
-    function openCamera(facing) {
-      try {
-        if (facing === 'front') AndroidBridge.openFrontCamera();
-        else                    AndroidBridge.openBackCamera();
-      } catch(e) {
-        alert('Camera bridge not available in browser preview.');
-      }
-    }
-
-    // ── Data Loaders ───────────────────────────────────────────────────────────────
-    function loadDevice() {
-      const d = bridge('getDeviceInfo');
-      if (d) {
-        buildRows(d, 'device-rows');
-        document.getElementById('headerSub').textContent =
-          `${d.manufacturer} ${d.model}  ·  Android ${d.androidVersion}`;
-      } else {
-        document.getElementById('device-rows').innerHTML =
-          '<div class="row"><span class="label">Note</span><span class="value" style="color:var(--accent)">Run on a real device to see data</span></div>';
-      }
-      const l = bridge('getLocaleInfo');
-      if (l) buildRows(l, 'locale-rows');
-    }
-
-    function loadBattery() {
-      const b = bridge('getBatteryInfo');
-      if (!b) return;
-      const pct = parseInt(b.percentage) || 0;
-      const bar = document.getElementById('bat-bar');
-      bar.style.width = pct + '%';
-      bar.className = 'bar-inner ' + (pct <= 15 ? 'bat-low' : pct <= 30 ? 'bat-mid' : 'bat-high');
-      document.getElementById('bat-label').textContent = pct + '%';
-      document.getElementById('bat-bar-lbl').textContent = pct + '%';
-      const { percentage, ...rest } = b;
-      buildRows(rest, 'battery-rows');
-    }
-
-    function loadScreen() {
-      const s = bridge('getScreenInfo');
-      if (s) buildRows(s, 'screen-rows');
-      buildRows({
-        'Window Width':       window.innerWidth + ' px',
-        'Window Height':      window.innerHeight + ' px',
-        'Device Pixel Ratio': window.devicePixelRatio,
-        'Color Depth':        screen.colorDepth + ' bit',
-        'Orientation':        screen.orientation?.type ?? 'Unknown'
-      }, 'browser-rows');
-    }
-
-    function loadNetwork() {
-      const n = bridge('getNetworkInfo');
-      if (n) buildRows(n, 'network-rows');
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      buildRows({
-        'Online':         navigator.onLine,
-        'Effective Type': conn?.effectiveType ?? 'Unknown',
-        'Downlink':       conn ? conn.downlink + ' Mbps' : 'Unknown',
-        'Save Data':      conn?.saveData ?? false
-      }, 'web-network-rows');
-    }
-
-    function loadStorage() {
-      const s = bridge('getStorageInfo');
-      if (!s) return;
-      const pct = parseFloat(s.usedPercent) || 0;
-      document.getElementById('sto-bar').style.width = pct + '%';
-      document.getElementById('sto-bar-lbl').textContent = pct + '%';
-      document.getElementById('sto-label').textContent =
-        `${s.usedInternal} used of ${s.totalInternal}`;
-      const { usedPercent, ...rest } = s;
-      buildRows(rest, 'storage-rows');
-    }
-
-    function loadCpu()    { const c = bridge('getCpuInfo');    if (c) buildRows(c, 'cpu-rows'); }
-    function loadCamera() { const c = bridge('getCameraInfo'); if (c) buildRows(c, 'camera-rows'); }
-
-    function loadSensors() {
-      const s = bridge('getSensorList');
-      if (!s) return;
-      document.getElementById('sensor-count').textContent = `${s.count} hardware sensors detected`;
-      const grid = document.getElementById('sensor-tags');
-      grid.innerHTML = '';
-      (s.sensors || []).forEach(sensor => {
-        const t = document.createElement('div');
-        t.className = 'sensor-tag';
-        t.textContent = sensor.name;
-        grid.appendChild(t);
-      });
-    }
-
-    // ── Motion ─────────────────────────────────────────────────────────────────────
-    window.addEventListener('devicemotion', e => {
-      const a = e.accelerationIncludingGravity;
-      if (a) {
-        document.getElementById('accel-x').textContent = a.x?.toFixed(2) ?? '—';
-        document.getElementById('accel-y').textContent = a.y?.toFixed(2) ?? '—';
-        document.getElementById('accel-z').textContent = a.z?.toFixed(2) ?? '—';
-      }
-    });
-    window.addEventListener('deviceorientation', e => {
-      document.getElementById('gyro-a').textContent = e.alpha?.toFixed(1) ?? '—';
-      document.getElementById('gyro-b').textContent = e.beta?.toFixed(1)  ?? '—';
-      document.getElementById('gyro-g').textContent = e.gamma?.toFixed(1) ?? '—';
-    });
-
-    // ── Vibrate ─────────────────────────────────────────────────────────────────────
-    function testVibrate(ms) {
-      try {
-        if (typeof AndroidBridge !== 'undefined') AndroidBridge.vibrate(ms);
-        else if (navigator.vibrate) navigator.vibrate(ms);
-      } catch(e) {}
-    }
-
-    // ── Location ────────────────────────────────────────────────────────────────────
-    function fetchLocation() {
-      const d = document.getElementById('loc-display');
-      d.innerHTML = '<div class="loading"><div class="spinner"></div>Fetching GPS fix…</div>';
-      if (!navigator.geolocation) {
-        d.innerHTML = '<span style="color:var(--accent)">Geolocation not supported</span>'; return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const { latitude: lat, longitude: lng, accuracy: acc,
-                  altitude: alt, speed: spd } = pos.coords;
-
-          let addressLine = '';
-          try {
-            if (typeof AndroidBridge !== 'undefined' && AndroidBridge.getAddress) {
-              addressLine = AndroidBridge.getAddress(lat, lng);
-            }
-          } catch(e) { console.error(e); }
-
-          d.innerHTML = `
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Latitude / Longitude</div>
-            <div class="coord">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
-            ${addressLine ? `<div style="font-size:13px;color:var(--blue);margin-bottom:12px;padding:0 10px;line-height:1.4;">${addressLine}</div>` : ''}
-            <div class="row"><span class="label">Accuracy</span><span class="value">± ${acc.toFixed(0)} m</span></div>
-            <div class="row"><span class="label">Altitude</span><span class="value">${alt != null ? alt.toFixed(1)+' m' : 'N/A'}</span></div>
-            <div class="row" style="border:none"><span class="label">Speed</span><span class="value">${spd != null ? (spd*3.6).toFixed(1)+' km/h' : 'N/A'}</span></div>
-          `;
-        },
-        err => { d.innerHTML = `<span style="color:var(--accent)">⚠ ${err.message}</span>`; },
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-      );
-    }
-
-    // ── Boot ────────────────────────────────────────────────────────────────────────
-    window.addEventListener('load', () => {
-      loadDevice(); loadBattery(); loadScreen();
-      loadNetwork(); loadStorage(); loadCpu();
-      loadSensors(); loadCamera();
-    });
-</script>
 </body>
 </html>

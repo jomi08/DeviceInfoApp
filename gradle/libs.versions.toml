@@ -10,8 +10,10 @@ activity = "1.9.3"
 constraintlayout = "2.1.4"
 webkit = "1.12.1"
 camera = "1.4.1"
+biometric = "1.2.0-alpha05"
 
 [libraries]
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

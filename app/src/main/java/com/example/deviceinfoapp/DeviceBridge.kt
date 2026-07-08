@@ -1,23 +1,13 @@
 package com.example.deviceinfoapp
 
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
-import android.os.BatteryManager
 import android.os.Build
-import android.os.Environment
-import android.os.StatFs
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
-import android.util.DisplayMetrics
-import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import org.json.JSONArray
 import org.json.JSONObject
@@ -28,19 +18,10 @@ class DeviceBridge(private val context: Context) {
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
-    private fun Long.toFormattedBytes(): String = when {
-        this < 1_024L             -> "$this B"
-        this < 1_048_576L         -> "%.1f KB".format(this / 1_024.0)
-        this < 1_073_741_824L     -> "%.1f MB".format(this / 1_048_576.0)
-        else                      -> "%.2f GB".format(this / 1_073_741_824.0)
-    }
-
     private fun Int.ipToString(): String =
         "${this and 0xFF}.${(this shr 8) and 0xFF}.${(this shr 16) and 0xFF}.${(this shr 24) and 0xFF}"
 
     // ── Camera Launch ────────────────────────────────────────────────────────
-    // These are called from JavaScript via AndroidBridge.openBackCamera()
-    // We cast to MainActivity so we can call launchCamera()
 
     @JavascriptInterface
     fun openBackCamera() {
@@ -71,81 +52,6 @@ class DeviceBridge(private val context: Context) {
         }.toString()
     }.getOrDefault("{}")
 
-    // ── Screen Info ──────────────────────────────────────────────────────────
-
-    @JavascriptInterface
-    fun getScreenInfo(): String = runCatching {
-        val metrics = DisplayMetrics()
-        @Suppress("DEPRECATION")
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager)
-            .defaultDisplay.getMetrics(metrics)
-
-        val densityLabel = when {
-            metrics.densityDpi <= 120 -> "ldpi"
-            metrics.densityDpi <= 160 -> "mdpi"
-            metrics.densityDpi <= 240 -> "hdpi"
-            metrics.densityDpi <= 320 -> "xhdpi"
-            metrics.densityDpi <= 480 -> "xxhdpi"
-            else                      -> "xxxhdpi"
-        }
-
-        JSONObject().apply {
-            put("widthPx", metrics.widthPixels)
-            put("heightPx", metrics.heightPixels)
-            put("density", metrics.density)
-            put("densityDpi", metrics.densityDpi)
-            put("densityLabel", densityLabel)
-            put("xdpi", "%.1f".format(metrics.xdpi))
-            put("ydpi", "%.1f".format(metrics.ydpi))
-        }.toString()
-    }.getOrDefault("{}")
-
-    // ── Battery Info ─────────────────────────────────────────────────────────
-
-    @JavascriptInterface
-    fun getBatteryInfo(): String = runCatching {
-        val intent = context.registerReceiver(
-            null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        ) ?: return "{}"
-
-        val level   = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-        val scale   = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-        val status  = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-        val plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)
-        val temp    = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)
-        val voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1)
-        val health  = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)
-        val tech    = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Unknown"
-        val pct     = if (scale > 0) "%.0f".format(level / scale.toFloat() * 100) else "?"
-
-        JSONObject().apply {
-            put("percentage", pct)
-            put("status", when (status) {
-                BatteryManager.BATTERY_STATUS_CHARGING     -> "Charging"
-                BatteryManager.BATTERY_STATUS_DISCHARGING  -> "Discharging"
-                BatteryManager.BATTERY_STATUS_FULL         -> "Full"
-                BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Not Charging"
-                else -> "Unknown"
-            })
-            put("pluggedVia", when (plugged) {
-                BatteryManager.BATTERY_PLUGGED_AC       -> "AC Charger"
-                BatteryManager.BATTERY_PLUGGED_USB      -> "USB"
-                BatteryManager.BATTERY_PLUGGED_WIRELESS -> "Wireless"
-                else -> "Unplugged"
-            })
-            put("temperature", "${temp / 10.0}°C")
-            put("voltage", "$voltage mV")
-            put("health", when (health) {
-                BatteryManager.BATTERY_HEALTH_GOOD         -> "Good"
-                BatteryManager.BATTERY_HEALTH_OVERHEAT     -> "Overheating"
-                BatteryManager.BATTERY_HEALTH_DEAD         -> "Dead"
-                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
-                else -> "Unknown"
-            })
-            put("technology", tech)
-        }.toString()
-    }.getOrDefault("{}")
-
     // ── Network Info ─────────────────────────────────────────────────────────
 
     @JavascriptInterface
@@ -171,6 +77,7 @@ class DeviceBridge(private val context: Context) {
         obj.put("connected", true)
         obj.put("type", type)
         obj.put("metered", !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED))
+        obj.put("bandwidth", "%.1f Mbps".format(caps.linkDownstreamBandwidthKbps / 1000.0))
         obj.put("downstreamBandwidth", "${caps.linkDownstreamBandwidthKbps} Kbps")
         obj.put("upstreamBandwidth", "${caps.linkUpstreamBandwidthKbps} Kbps")
 
@@ -186,32 +93,6 @@ class DeviceBridge(private val context: Context) {
             obj.put("ipAddress", wi.ipAddress.ipToString())
         }
         obj.toString()
-    }.getOrDefault("{}")
-
-    // ── Storage Info ─────────────────────────────────────────────────────────
-
-    @JavascriptInterface
-    fun getStorageInfo(): String = runCatching {
-        val stat = StatFs(Environment.getDataDirectory().path)
-        val blockSize = stat.blockSizeLong
-        val total     = stat.blockCountLong * blockSize
-        val free      = stat.availableBlocksLong * blockSize
-        val used      = total - free
-
-        JSONObject().apply {
-            put("totalInternal", total.toFormattedBytes())
-            put("usedInternal", used.toFormattedBytes())
-            put("freeInternal", free.toFormattedBytes())
-            put("usedPercent", "%.1f".format(if (total > 0) used / total.toDouble() * 100 else 0.0))
-            val extAvail = Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
-            put("externalMounted", extAvail)
-            if (extAvail) {
-                val ext = StatFs(Environment.getExternalStorageDirectory().path)
-                val eb  = ext.blockSizeLong
-                put("totalExternal", (ext.blockCountLong * eb).toFormattedBytes())
-                put("freeExternal", (ext.availableBlocksLong * eb).toFormattedBytes())
-            }
-        }.toString()
     }.getOrDefault("{}")
 
     // ── CPU / Memory ─────────────────────────────────────────────────────────
@@ -283,31 +164,88 @@ class DeviceBridge(private val context: Context) {
         }.toString()
     }.getOrDefault("{}")
 
-    // ── Vibrate ──────────────────────────────────────────────────────────────
+    // ── Biometric Info ───────────────────────────────────────────────────────
 
     @JavascriptInterface
-    fun vibrate(milliseconds: Int) {
-        runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vm = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vm.defaultVibrator.vibrate(
-                    VibrationEffect.createOneShot(
-                        milliseconds.toLong(), VibrationEffect.DEFAULT_AMPLITUDE
-                    )
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(
-                        milliseconds.toLong(), VibrationEffect.DEFAULT_AMPLITUDE
-                    ))
-                } else {
-                    @Suppress("DEPRECATION")
-                    v.vibrate(milliseconds.toLong())
-                }
-            }
+    fun getBiometricInfo(): String = runCatching {
+        val biometricManager = androidx.biometric.BiometricManager.from(context)
+        val canAuthenticate = biometricManager.canAuthenticate(
+            androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG or 
+            androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        )
+        JSONObject().apply {
+            put("available", canAuthenticate == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS)
+            put("status", when (canAuthenticate) {
+                androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS -> "Supported"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> "No hardware"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> "Hardware unavailable"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> "None enrolled"
+                else -> "Unknown"
+            })
+        }.toString()
+    }.getOrDefault("{}")
+
+    @JavascriptInterface
+    fun authenticate() {
+        (context as? MainActivity)?.runOnUiThread {
+            (context as? MainActivity)?.authenticateBiometric()
         }
+    }
+
+    // ── Audio Info ──────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    fun getAudioInfo(): String = runCatching {
+        val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+        JSONObject().apply {
+            put("mode", when (am.mode) {
+                android.media.AudioManager.MODE_NORMAL -> "Normal"
+                android.media.AudioManager.MODE_RINGTONE -> "Ringtone"
+                android.media.AudioManager.MODE_IN_CALL -> "In Call"
+                android.media.AudioManager.MODE_IN_COMMUNICATION -> "Communication"
+                else -> "Unknown"
+            })
+            put("isMusicActive", am.isMusicActive)
+            put("isSpeakerphoneOn", am.isSpeakerphoneOn)
+            put("isMicrophoneMuted", am.isMicrophoneMute)
+            put("volumeMusic", am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC))
+            put("maxVolumeMusic", am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC))
+        }.toString()
+    }.getOrDefault("{}")
+
+    // ── GPS Status ──────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    fun getGpsStatus(): String = runCatching {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+        val isGpsEnabled = lm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+        val isNetworkEnabled = lm.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)
+        JSONObject().apply {
+            put("gpsEnabled", isGpsEnabled)
+            put("networkEnabled", isNetworkEnabled)
+            put("locationEnabled", isGpsEnabled || isNetworkEnabled)
+        }.toString()
+    }.getOrDefault("{}")
+
+    // ── Gallery Picker ──────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    fun openGallery() {
+        (context as? MainActivity)?.openGallery()
+    }
+
+    // ── Speech to Text ──────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    fun startSpeechToText() {
+        (context as? MainActivity)?.runOnUiThread {
+            (context as? MainActivity)?.startSpeechToText()
+        }
+    }
+
+    @JavascriptInterface
+    fun openMaps(lat: Double, lng: Double) {
+        (context as? MainActivity)?.openMaps(lat, lng)
     }
 
     // ── Geocoding ───────────────────────────────────────────────────────────
